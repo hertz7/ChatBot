@@ -1,6 +1,7 @@
 package com.example.hmv.chatbot;
 
 import android.database.DataSetObserver;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
@@ -150,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
                                     "\nAction: " + result.getAction() +
                                     "\nParameters: " + parameterString +
                                     "\nReply:" + resultString);
+
                             sendChatMessage();
                         }
                     }

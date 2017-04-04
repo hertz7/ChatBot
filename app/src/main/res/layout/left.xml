@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    >
 
     <TextView
         android:id="@+id/msgr"
@@ -16,5 +17,6 @@
         android:paddingRight="10dp"
         android:paddingTop="5dp"
         android:text="Sampleleft"
-        android:textColor="#000" />
+        android:textColor="#000"
+        android:backgroundTint="#89c785"/>
 </RelativeLayout>
