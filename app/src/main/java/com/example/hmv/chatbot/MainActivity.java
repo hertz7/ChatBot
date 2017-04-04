@@ -1,15 +1,20 @@
 package com.example.hmv.chatbot;
 
+import android.database.DataSetObserver;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import ai.api.AIDataService;
@@ -35,6 +40,11 @@ public class MainActivity extends AppCompatActivity {
     private TextView resultTextView;
     private EditText textV;
     private AIService aiService;
+    private ChatArrayAdapter chatArrayAdapter;
+    private ListView listView;
+    private EditText chatText;
+    private Button buttonSend;
+    private boolean side = false;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -46,11 +56,48 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        buttonSend = (Button) findViewById(R.id.send);
 
-        listenButton = (Button) findViewById(R.id.listenButton);
+        listView = (ListView) findViewById(R.id.msgview);
+
+
+        /*listenButton = (Button) findViewById(R.id.send);
         textV = (EditText) findViewById(R.id.editText);
         final TextView resultTextView1 = (TextView) findViewById(R.id.textView);
-        resultTextView = (TextView) findViewById(R.id.textView1);
+        resultTextView = (TextView) findViewById(R.id.textView1);*/
+
+        chatArrayAdapter = new ChatArrayAdapter(getApplicationContext(), R.layout.right);
+        listView.setAdapter(chatArrayAdapter);
+
+
+        chatText = (EditText) findViewById(R.id.msg);
+        chatText.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    return sendChatMessage();
+                }
+                return false;
+            }
+        });
+
+//        buttonSend.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View arg0) {
+//                sendChatMessage();
+//            }
+//        });
+
+        listView.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+        listView.setAdapter(chatArrayAdapter);
+
+        //to scroll the list view to bottom on data change
+        chatArrayAdapter.registerDataSetObserver(new DataSetObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                listView.setSelection(chatArrayAdapter.getCount() - 1);
+            }
+        });
 
         final AIConfiguration config = new AIConfiguration("a540f456608a459db3de8fd6458b9759",
                 AIConfiguration.SupportedLanguages.English,
@@ -61,13 +108,13 @@ public class MainActivity extends AppCompatActivity {
         final AIRequest aiRequest = new AIRequest();
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 
-        listenButton.setOnClickListener(new View.OnClickListener(){
+        buttonSend.setOnClickListener(new View.OnClickListener(){
 
             @Override
             public void onClick(View v) {
-                String input =textV.getText().toString().trim();
+                String input =chatText.getText().toString().trim();
                 aiRequest.setQuery(input);
-                resultTextView1.setText(input);
+                sendChatMessage();
                 //aiService.setListener(this);
                 new AsyncTask<AIRequest, Void, AIResponse>() {
                     @Override
@@ -100,16 +147,24 @@ public class MainActivity extends AppCompatActivity {
                                 resultString += "(" + result.getFulfillment().getSpeech() + ") ";
                             }
                             // Show results in TextView.
-                            resultTextView.setText("Query:" + result.getResolvedQuery() +
+                            chatText.setText("Query:" + result.getResolvedQuery() +
                                     "\nAction: " + result.getAction() +
                                     "\nParameters: " + parameterString +
                                     "\nReply:" + resultString);
+
+                            sendChatMessage();
                         }
                     }
                 }.execute(aiRequest);
             }
         });
 
+    }
+    private boolean sendChatMessage() {
+        chatArrayAdapter.add(new ChatMessage(side, chatText.getText().toString()));
+        chatText.setText("");
+        side = !side;
+        return true;
     }
 }
 //    public void onResult(final AIResponse response) {
