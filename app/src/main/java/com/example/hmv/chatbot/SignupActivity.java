@@ -1,5 +1,9 @@
 package com.example.hmv.chatbot;
 
+/**
+ * Created by hertz on 3/4/17.
+ */
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -48,7 +52,6 @@ public class SignupActivity extends AppCompatActivity {
         btnSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(SignupActivity.this,LoginActivity.class));
                 finish();
             }
         });
