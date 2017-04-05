@@ -131,56 +131,60 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             @Override
             public void onClick(View v) {
                 String input =chatText.getText().toString().trim();
-                aiRequest.setQuery(input);
+                if(!input.equals(""))
+                {
+                    aiRequest.setQuery(input);
 
-                sendChatMessage();
-                //aiService.setListener(this);
-                new AsyncTask<AIRequest, Void, AIResponse>() {
-                    @Override
-                    protected AIResponse doInBackground(AIRequest... requests) {
-                        final AIRequest request = requests[0];
-                        try {
-                            final AIResponse response = aiDataService.request(aiRequest);
-                            return response;
-                        } catch (AIServiceException e) {
+                    sendChatMessage();
+                    //aiService.setListener(this);
+                    new AsyncTask<AIRequest, Void, AIResponse>() {
+                        @Override
+                        protected AIResponse doInBackground(AIRequest... requests) {
+                            final AIRequest request = requests[0];
+                            try {
+                                final AIResponse response = aiDataService.request(aiRequest);
+                                return response;
+                            } catch (AIServiceException e) {
+                            }
+                            return null;
                         }
-                        return null;
-                    }
 
-                    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-                    @Override
-                    protected void onPostExecute(AIResponse aiResponse) {
-                        if (aiResponse != null) {
-                            Result result = aiResponse.getResult();
+                        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+                        @Override
+                        protected void onPostExecute(AIResponse aiResponse) {
+                            if (aiResponse != null) {
+                                Result result = aiResponse.getResult();
 
-                            // Get parameters
-                            String parameterString = "";
-                            String resultString = "";
+                                // Get parameters
+                                String parameterString = "";
+                                String resultString = "";
 
-                            if (result.getParameters() != null && !result.getParameters().isEmpty()) {
-                                for (final Map.Entry<String, JsonElement> entry : result.getParameters().entrySet()) {
-                                    parameterString += "(" + entry.getKey() + ", " + entry.getValue() + ") ";
+                                if (result.getParameters() != null && !result.getParameters().isEmpty()) {
+                                    for (final Map.Entry<String, JsonElement> entry : result.getParameters().entrySet()) {
+                                        parameterString += "(" + entry.getKey() + ", " + entry.getValue() + ") ";
+                                    }
+
                                 }
+                                if (result.getFulfillment() != null) {
+                                    resultString += "(" + result.getFulfillment().getSpeech() + ") ";
+                                }
+                                // Show results in TextView.
+                                chatText.setText("Query:" + result.getResolvedQuery() +
+                                        "\nAction: " + result.getAction() +
+                                        "\nParameters: " + parameterString +
+                                        "\nReply:" + resultString);
+                                if(text_to_speech==true)
+                                {
+                                    speakOut();
+                                }
+                                sendChatMessage();
 
                             }
-                            if (result.getFulfillment() != null) {
-                                resultString += "(" + result.getFulfillment().getSpeech() + ") ";
-                            }
-                            // Show results in TextView.
-                            chatText.setText("Query:" + result.getResolvedQuery() +
-                                    "\nAction: " + result.getAction() +
-                                    "\nParameters: " + parameterString +
-                                    "\nReply:" + resultString);
-                            if(text_to_speech==true)
-                            {
-                                speakOut();
-                            }
-                            sendChatMessage();
-
                         }
-                    }
-                }.execute(aiRequest);
-            }
+                    }.execute(aiRequest);
+                }
+                }
+
         });
 
     }
