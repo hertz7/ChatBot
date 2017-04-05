@@ -3,8 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/mi_speechToText"
+
         android:title="TextToSpeech"
-        android:icon="@drawable/mi_mike"
+        android:icon="@drawable/tts_on"
         app:showAsAction="always"
         android:onClick="onTextToSpeech"
         />

@@ -56,7 +56,9 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private EditText chatText;
     private Button buttonSend;
     private boolean side = false;
-    private boolean text_to_speech=false;
+    private boolean text_to_speech=true;
+    private Menu menu;
+
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -169,7 +171,10 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                                     "\nAction: " + result.getAction() +
                                     "\nParameters: " + parameterString +
                                     "\nReply:" + resultString);
-                            speakOut();
+                            if(text_to_speech==true)
+                            {
+                                speakOut();
+                            }
                             sendChatMessage();
 
                         }
@@ -227,13 +232,32 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_main,menu);
+        this.menu = menu;
+
         return true;
     }
 
     public void onTextToSpeech(MenuItem menuItem)
     {
-        Toast.makeText(this, "clicked", Toast.LENGTH_SHORT).show();
+        if(text_to_speech==true)
+        {
+            Toast.makeText(this, "Text to speech is off", Toast.LENGTH_SHORT).show();
+            menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.tts_off));
+
+        }
+        else if(text_to_speech==false)
+        {
+            Toast.makeText(this, "Text to speech is On", Toast.LENGTH_SHORT).show();
+            menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.tts_on));
+        }
+
+        text_to_speech=!text_to_speech;
+
+
+
     }
+
+
 }
 //    public void onResult(final AIResponse response) {
 //        Result result = response.getResult();
