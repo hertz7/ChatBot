@@ -4,12 +4,18 @@ import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.speech.tts.TextToSpeech;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.Button;
@@ -34,10 +40,13 @@ import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.gson.JsonElement;
 import ai.api.model.AIRequest;
+
+import java.util.Locale;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener {
 
+    private TextToSpeech tts;
     private Button listenButton;
     private TextView resultTextView;
     private EditText textV;
@@ -47,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText chatText;
     private Button buttonSend;
     private boolean side = false;
+    private boolean text_to_speech=false;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -61,13 +71,16 @@ public class MainActivity extends AppCompatActivity {
         buttonSend = (Button) findViewById(R.id.send);
 
         listView = (ListView) findViewById(R.id.msgview);
+//
+//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
 
 
         /*listenButton = (Button) findViewById(R.id.send);
         textV = (EditText) findViewById(R.id.editText);
         final TextView resultTextView1 = (TextView) findViewById(R.id.textView);
         resultTextView = (TextView) findViewById(R.id.textView1);*/
-
+        tts = new TextToSpeech(this, this);
         chatArrayAdapter = new ChatArrayAdapter(getApplicationContext(), R.layout.right);
         listView.setAdapter(chatArrayAdapter);
 
@@ -112,10 +125,12 @@ public class MainActivity extends AppCompatActivity {
 
         buttonSend.setOnClickListener(new View.OnClickListener(){
 
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onClick(View v) {
                 String input =chatText.getText().toString().trim();
                 aiRequest.setQuery(input);
+
                 sendChatMessage();
                 //aiService.setListener(this);
                 new AsyncTask<AIRequest, Void, AIResponse>() {
@@ -130,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
                         return null;
                     }
 
+                    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                     @Override
                     protected void onPostExecute(AIResponse aiResponse) {
                         if (aiResponse != null) {
@@ -153,8 +169,9 @@ public class MainActivity extends AppCompatActivity {
                                     "\nAction: " + result.getAction() +
                                     "\nParameters: " + parameterString +
                                     "\nReply:" + resultString);
-
+                            speakOut();
                             sendChatMessage();
+
                         }
                     }
                 }.execute(aiRequest);
@@ -168,11 +185,54 @@ public class MainActivity extends AppCompatActivity {
         side = !side;
         return true;
     }
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    public void onInit(int status) {
+
+        if (status == TextToSpeech.SUCCESS) {
+
+            int result = tts.setLanguage(Locale.US);
+
+            if (result == TextToSpeech.LANG_MISSING_DATA
+                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS", "This Language is not supported");
+            } else {
+                buttonSend.setEnabled(true);
+                speakOut();
+            }
+
+        } else {
+            Log.e("TTS", "Initilization Failed!");
+        }
+
+    }
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void speakOut() {
+
+        String text = chatText.getText().toString();
+
+        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null,null);
+    }
+    @Override
+    public void onDestroy() {
+        // Don't forget to shutdown tts!
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
+        super.onDestroy();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu, menu);
-        Toast.makeText(this, "turn_off", Toast.LENGTH_SHORT).show();
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main,menu);
         return true;
+    }
+
+    public void onTextToSpeech(MenuItem menuItem)
+    {
+        Toast.makeText(this, "clicked", Toast.LENGTH_SHORT).show();
     }
 }
 //    public void onResult(final AIResponse response) {
