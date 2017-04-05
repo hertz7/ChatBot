@@ -13,6 +13,9 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.Button;
@@ -20,6 +23,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import ai.api.AIDataService;
 import ai.api.AIListener;
@@ -52,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private EditText chatText;
     private Button buttonSend;
     private boolean side = false;
+    private boolean text_to_speech=false;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -216,6 +221,18 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             tts.shutdown();
         }
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main,menu);
+        return true;
+    }
+
+    public void onTextToSpeech(MenuItem menuItem)
+    {
+        Toast.makeText(this, "clicked", Toast.LENGTH_SHORT).show();
     }
 }
 //    public void onResult(final AIResponse response) {
