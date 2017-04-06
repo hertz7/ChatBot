@@ -68,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private boolean side = false;
     private boolean text_to_speech=true;
     private Menu menu;
+    private TrackGPS gps;
+    double longitude,latitude;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -101,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         chatText.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    return sendChatMessage();
+                    return sendChatMessage(1);
                 }
                 return false;
             }
@@ -145,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 {
                     aiRequest.setQuery(input);
 
-                    sendChatMessage();
+                    sendChatMessage(1);
                     //aiService.setListener(this);
                     new AsyncTask<AIRequest, Void, AIResponse>() {
                         @Override
@@ -190,12 +192,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                                 String action=result.getAction();
                                 if(action.compareTo("places")==0&&result.getParameters().get("geo-city")!=null&&result.getParameters().get("place-attraction").toString()!=null)
                                 {
-                                    sendChatMessage();
+                                    sendChatMessage(2);
                                     urlCall(result.getParameters().get("geo-city").toString(),result.getParameters().get("place-attraction").toString());
                                 }
                                 else
                                 {
-                                    sendChatMessage();
+                                    sendChatMessage(2);
                                 }
 
 
@@ -209,10 +211,14 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         });
 
     }
-    public boolean sendChatMessage() {
+    public boolean sendChatMessage(int i) {
+        if(i==1)
+            side = false;
+        else
+            side = true;
         chatArrayAdapter.add(new ChatMessage(side, chatText.getText().toString()));
         chatText.setText("");
-        side = !side;
+
         return true;
     }
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -251,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             tts.shutdown();
         }
         super.onDestroy();
+        gps.stopUsingGPS();
     }
 
     @Override
@@ -294,19 +301,33 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         // Display the first 500 characters of the response string.
 
                         chatText.setText("Response is: "+ response);
-                        sendChatMessage();
+                        sendChatMessage(2);
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 chatText.setText("That didn't work!");
-                sendChatMessage();
+                sendChatMessage(2);
             }
         });
 // Add the request to the RequestQueue.
         queue.add(stringRequest);
     }
 
+    public void location()
+    {
+        gps = new TrackGPS(MainActivity.this);
+        if(gps.canGetLocation()){
+            longitude = gps.getLongitude();
+            latitude = gps .getLatitude();
+
+        }
+        else
+        {
+            gps.showSettingsAlert();
+        }
+
+    }
 
 }
 //    public void onResult(final AIResponse response) {

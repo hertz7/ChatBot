@@ -32,13 +32,13 @@ public class GooglePlacesUrl extends MainActivity{
                         // Display the first 500 characters of the response string.
 
                         chatText.setText("Response is: "+ response);
-                        mainObj.sendChatMessage();
+                        mainObj.sendChatMessage(1);
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 chatText.setText("That didn't work!");
-                mainObj.sendChatMessage();
+                mainObj.sendChatMessage(1);
             }
         });
 // Add the request to the RequestQueue.
