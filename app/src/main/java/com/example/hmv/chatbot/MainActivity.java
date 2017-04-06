@@ -293,7 +293,10 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     public void onResponse(String response) {
                         // Display the first 500 characters of the response string.
 
-                        chatText.setText("Response is: "+ response);
+                        JsonExtractor je=new JsonExtractor(response);
+                        String fResponse=je.reqResponse();
+                        chatText.setText(fResponse);
+
                         sendChatMessage();
                     }
                 }, new Response.ErrorListener() {
