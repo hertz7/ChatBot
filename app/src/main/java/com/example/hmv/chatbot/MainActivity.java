@@ -35,12 +35,22 @@ import ai.api.model.AIError;
 import ai.api.model.AIResponse;
 import ai.api.model.Result;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.gson.JsonElement;
 import ai.api.model.AIRequest;
 
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Locale;
 import java.util.Map;
 
@@ -166,18 +176,29 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
                                 }
                                 if (result.getFulfillment() != null) {
-                                    resultString += "(" + result.getFulfillment().getSpeech() + ") ";
+                                    resultString += result.getFulfillment().getSpeech() ;
                                 }
                                 // Show results in TextView.
-                                chatText.setText("Query:" + result.getResolvedQuery() +
-                                        "\nAction: " + result.getAction() +
-                                        "\nParameters: " + parameterString +
-                                        "\nReply:" + resultString);
+                                chatText.setText(resultString);
+
                                 if(text_to_speech==true)
                                 {
                                     speakOut();
+
                                 }
-                                sendChatMessage();
+//                                sendChatMessage();
+                                String action=result.getAction();
+                                if(action.compareTo("places")==0&&result.getParameters().get("geo-city")!=null&&result.getParameters().get("place-attraction").toString()!=null)
+                                {
+                                    sendChatMessage();
+                                    urlCall(result.getParameters().get("geo-city").toString(),result.getParameters().get("place-attraction").toString());
+                                }
+                                else
+                                {
+                                    sendChatMessage();
+                                }
+
+
 
                             }
                         }
@@ -188,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         });
 
     }
-    private boolean sendChatMessage() {
+    public boolean sendChatMessage() {
         chatArrayAdapter.add(new ChatMessage(side, chatText.getText().toString()));
         chatText.setText("");
         side = !side;
@@ -259,6 +280,31 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
 
 
+    }
+    public void urlCall(String city,String place){
+// Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url ="https://maps.googleapis.com/maps/api/place/textsearch/json?query="+place+"+in+"+city+"&key=AIzaSyAV-JsxOAqem1U1sSBchQjCQqDaY0qJDfk";
+
+// Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+
+                        chatText.setText("Response is: "+ response);
+                        sendChatMessage();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                chatText.setText("That didn't work!");
+                sendChatMessage();
+            }
+        });
+// Add the request to the RequestQueue.
+        queue.add(stringRequest);
     }
 
 
